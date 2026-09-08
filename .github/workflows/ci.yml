@@ -1,0 +1,32 @@
+# CI：每次 push / PR 自动执行代码检查 + 构建 + 测试
+# Docker 镜像构建与推送在「Docker 化」阶段加入本文件
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  build:
+    name: vet + build + test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Go（版本跟随 go.mod 里的 go 指令）
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true   # 自动缓存 go mod 依赖，加速后续构建
+
+      - name: 静态检查
+        run: go vet ./...
+
+      - name: 构建
+        run: go build ./...
+
+      - name: 测试
+        run: go test ./...
