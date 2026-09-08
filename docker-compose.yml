@@ -1,0 +1,28 @@
+# 本地开发环境编排：目前只有 MySQL，后续逐步加入 Redis、MQ、backend 服务
+# 用法：docker compose up -d         停止：docker compose down
+# 数据持久化在命名卷 mysql-data 里，容器删了数据还在（down 不会删卷，down -v 才会）
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: blog-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: blog123456   # 本地开发密码；生产环境改用环境变量注入
+      MYSQL_DATABASE: blog              # 首次启动自动建库（应用侧也会自动建，双保险）
+      TZ: Asia/Shanghai
+    ports:
+      - "3307:3306"   # 宿主 3307 → 容器 3306；本机 3306 已被本地 MySQL 占用，故用 3307
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      # $$ 转义防止被 compose 当变量插值；容器内可直接用 MYSQL_ROOT_PASSWORD 环境变量
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mysql-data:
