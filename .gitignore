@@ -1,0 +1,10 @@
+# 编译产物
+*.exe
+*.test
+*.out
+
+# IDE
+.idea/
+
+# 日志
+*.log
