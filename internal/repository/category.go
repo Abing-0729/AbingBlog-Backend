@@ -26,7 +26,7 @@ type CategoryWithCount struct {
 
 // ListWithCount 分类列表，附带每个分类下「已发布且未删除」文章的数量
 func (r *CategoryRepo) ListWithCount() ([]CategoryWithCount, error) {
-	var list []CategoryWithCount
+	list := make([]CategoryWithCount, 0) // 初始化为空切片，空列表也序列化为 [] 而不是 null
 	err := r.db.Model(&model.Category{}).
 		Select("categories.*, COUNT(articles.id) AS article_count").
 		Joins("LEFT JOIN articles ON articles.category_id = categories.id AND articles.status = ? AND articles.deleted_at IS NULL", "published").
@@ -66,7 +66,23 @@ func (r *CategoryRepo) Update(c *model.Category) error {
 	}).Error
 }
 
+// Delete 删除分类。
+// 软删除的文章行仍在表里且带着 category_id，外键会阻止删分类；
+// 所以先永久清掉该分类下「已软删」的文章（用户本来就已经删了它们）——
+// 顺序：清中间表关联 → 硬删文章 → 删分类，每一步都有外键依赖。
+// 活跃文章由 service 层检查保证不存在。
 func (r *CategoryRepo) Delete(id uint) error {
+	if err := r.db.Exec(
+		"DELETE FROM article_tags WHERE article_id IN (SELECT id FROM articles WHERE category_id = ? AND deleted_at IS NOT NULL)",
+		id,
+	).Error; err != nil {
+		return err
+	}
+	if err := r.db.Unscoped().
+		Where("category_id = ? AND deleted_at IS NOT NULL", id).
+		Delete(&model.Article{}).Error; err != nil {
+		return err
+	}
 	return r.db.Delete(&model.Category{}, id).Error
 }
 

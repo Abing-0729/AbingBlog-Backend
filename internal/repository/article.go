@@ -42,14 +42,15 @@ func (r *ArticleRepo) List(page, pageSize int, status, categorySlug, tag, keywor
 	query := r.buildQuery(status, categorySlug, tag, keyword)
 
 	// 带 JOIN 时用 DISTINCT 计数：多对多关联会把同一篇文章展开成多行
+	// 注意：Count/Find 都要用 Session 拷贝，避免上一个操作的从句（如 Distinct）污染下一个查询
 	var total int64
-	if err := query.Distinct("articles.id").Count(&total).Error; err != nil {
+	if err := query.Session(&gorm.Session{}).Distinct("articles.id").Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
 	// GROUP BY 主键去重（MySQL 允许按主键分组后取整行）；Preload 是独立查询，不受影响
 	var list []model.Article
-	err := query.Group("articles.id").
+	err := query.Session(&gorm.Session{}).Group("articles.id").
 		Order("articles.published_at DESC, articles.id DESC").
 		Offset((page - 1) * pageSize).Limit(pageSize).
 		Preload("Category").Preload("Tags").

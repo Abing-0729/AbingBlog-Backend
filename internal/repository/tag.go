@@ -24,7 +24,7 @@ type TagWithCount struct {
 
 // ListWithCount 标签列表，附带每个标签下「已发布且未删除」文章的数量
 func (r *TagRepo) ListWithCount() ([]TagWithCount, error) {
-	var list []TagWithCount
+	list := make([]TagWithCount, 0) // 初始化为空切片，空列表也序列化为 [] 而不是 null
 	err := r.db.Model(&model.Tag{}).
 		Select("tags.*, COUNT(article_tags.article_id) AS article_count").
 		Joins("LEFT JOIN article_tags ON article_tags.tag_id = tags.id").
@@ -71,7 +71,12 @@ func (r *TagRepo) Update(t *model.Tag) error {
 	return r.db.Model(t).Updates(map[string]any{"name": t.Name}).Error
 }
 
-// Delete 删除标签；Select("Articles") 让 GORM 同时清掉 article_tags 中间表的关联行
+// Delete 删除标签。
+// 直接删中间表全部关联行（含指向已软删文章的），否则外键会阻止删标签；
+// GORM 的 Association 操作默认会跳过软删文章，清不干净。
 func (r *TagRepo) Delete(id uint) error {
-	return r.db.Select("Articles").Delete(&model.Tag{}, id).Error
+	if err := r.db.Exec("DELETE FROM article_tags WHERE tag_id = ?", id).Error; err != nil {
+		return err
+	}
+	return r.db.Delete(&model.Tag{}, id).Error
 }
