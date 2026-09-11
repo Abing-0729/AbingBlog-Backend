@@ -42,6 +42,7 @@ func Init(cfg *config.Config) *gorm.DB {
 	// 3. 自动迁移：创建/更新表结构（含多对多中间表 article_tags）
 	if err := db.AutoMigrate(
 		&model.User{},
+		&model.SiteMetric{},
 		&model.Category{},
 		&model.Tag{},
 		&model.Article{},

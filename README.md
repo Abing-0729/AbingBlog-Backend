@@ -55,13 +55,18 @@ Blog-Backend/
 ├── docs/
 │   └── api-v1.md                # API 文档（前后端契约）
 ├── docker-compose.yml           # 本地 MySQL 开发环境
+├── Dockerfile                   # 生产镜像，多阶段构建
+├── docker-compose.prod.yml      # 生产服务编排
 ├── .github/workflows/
-│   └── ci.yml                   # GitHub Actions：vet + build + test
+│   ├── ci.yml                   # GitHub Actions：格式 + vet + test + build
+│   └── deploy.yml               # 发布 GHCR 镜像并通过 SSH 部署
 ├── go.mod
 └── go.sum
 ```
 
 ## 快速开始
+
+完整的阿里云 ECS、Docker、Nginx、HTTPS、CI/CD、回滚和故障排查说明见 [`docs/deployment.md`](docs/deployment.md)。
 
 ### 1. 前置条件
 
@@ -90,6 +95,9 @@ go mod tidy
 
 # 运行
 go run ./cmd/server/
+
+# 初始化管理员（首次部署执行一次）
+go run ./cmd/seed/
 
 # 看到以下输出表示启动成功：
 # server running at http://localhost:8080
@@ -222,7 +230,7 @@ r := router.Setup(h)                              // 4. router 依赖 handler
 
 ```
 /api/v1/*          → 公共接口（游客可访问，只返回 status=published 的内容）
-/api/v1/admin/*    → 后台接口（下一迭代挂 JWT 中间件，当前暂无鉴权）
+/api/v1/admin/*    → 后台接口（必须携带 JWT）
 ```
 
 ## 数据库表关系
@@ -286,11 +294,11 @@ go mod graph
 | 阶段 | 内容 | 状态 |
 |---|---|---|
 | 1 | 项目骨架 + 分层架构 + 文章/分类/标签 CRUD | ✅ 已完成 |
-| 2 | JWT 登录认证 + 后台接口鉴权 | 🔲 待开发 |
+| 2 | JWT 登录认证 + 后台接口鉴权 | ✅ 已完成 |
 | 3 | Redis 缓存（Cache Aside） | 🔲 待开发 |
 | 4 | MQ 异步（浏览量落库） | 🔲 待开发 |
 | 5 | Docker 化 + 生产环境配置 | 🔲 待开发 |
-| 6 | CI/CD 自动部署到服务器 | 🔲 待开发 |
+| 6 | CI/CD 自动部署到服务器 | 🟡 已提供流水线，需配置 Secrets |
 | 7 | 前后端联调 + 公网访问 | 🔲 待开发 |
 
 详见 `docs/api-v1.md`。
@@ -305,9 +313,9 @@ A: 可以，但分层后每一层职责单一，改 bug 时能快速定位。面
 
 A: 这个项目依赖少，手动装配不到 10 行代码，引入框架反而增加学习成本。等依赖多到手动装配变痛苦时再考虑也不迟。
 
-**Q: 后台接口目前没有鉴权，谁都能调？**
+**Q: 如何部署生产环境？**
 
-A: 是的，当前 `/admin/*` 接口没有挂 JWT 中间件，这是下一迭代要做的事。代码里已标了 `TODO(JWT)` 注释。
+A: 准备一台安装 Docker Compose 的服务器，将 `docker-compose.prod.yml` 放到部署目录，并在 GitHub 配置 `DEPLOY_HOST`、`DEPLOY_USER`、`DEPLOY_SSH_KEY`、`DEPLOY_PATH`、`MYSQL_ROOT_PASSWORD` 和 `JWT_SECRET`。推送版本标签（如 `v1.0.0`）或手动运行 `Deploy` workflow 即可。
 
 **Q: 数据库表结构改了怎么办？**
 

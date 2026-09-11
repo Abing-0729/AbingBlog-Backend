@@ -1,32 +1,58 @@
-# CI：每次 push / PR 自动执行代码检查 + 构建 + 测试
-# Docker 镜像构建与推送在「Docker 化」阶段加入本文件
 name: CI
 
 on:
   push:
-    branches: [master, main]
+    branches: [develop, main]
   pull_request:
-    branches: [master, main]
+    branches: [develop, main]
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-    name: vet + build + test
+  verify:
+    name: Verify
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout 代码
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 安装 Go（版本跟随 go.mod 里的 go 指令）
+      - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-          cache: true   # 自动缓存 go mod 依赖，加速后续构建
+          cache: true
 
-      - name: 静态检查
+      - name: Check formatting
+        shell: bash
+        run: |
+          files=$(gofmt -l .)
+          if [[ -n "$files" ]]; then
+            echo "The following files are not gofmt-formatted:"
+            echo "$files"
+            exit 1
+          fi
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Vet
         run: go vet ./...
 
-      - name: 构建
-        run: go build ./...
+      - name: Test
+        run: go test -race -covermode=atomic -coverprofile=coverage.out ./...
 
-      - name: 测试
-        run: go test ./...
+      - name: Build server
+        run: go build -trimpath -ldflags="-s -w" -o bin/server ./cmd/server
+
+      - name: Build seed command
+        run: go build -trimpath -ldflags="-s -w" -o bin/seed ./cmd/seed
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.out
+          if-no-files-found: ignore

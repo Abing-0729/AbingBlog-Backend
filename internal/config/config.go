@@ -43,6 +43,15 @@ func Load() *Config {
 	viper.AddConfigPath("./configs")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
+	for _, key := range []string{
+		"server.port",
+		"mysql.host", "mysql.port", "mysql.user", "mysql.password", "mysql.dbname", "mysql.charset",
+		"jwt.secret", "jwt.expires_in",
+	} {
+		if err := viper.BindEnv(key); err != nil {
+			log.Fatalf("绑定环境变量失败: %v", err)
+		}
+	}
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("读取配置文件失败: %v", err)

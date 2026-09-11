@@ -17,6 +17,7 @@ func Setup(h *handler.Handler, jwtSecret string) *gin.Engine {
 	v1 := r.Group("/api/v1")
 	{
 		v1.POST("/auth/login", h.Auth.Login)
+		v1.POST("/visits/start", h.SiteMetric.RecordStart)
 		v1.GET("/articles", h.Article.List)
 		v1.GET("/articles/:id", h.Article.Get)
 		v1.GET("/categories", h.Category.List)

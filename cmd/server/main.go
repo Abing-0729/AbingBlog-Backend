@@ -23,14 +23,16 @@ func main() {
 	categoryRepo := repository.NewCategoryRepo(db)
 	tagRepo := repository.NewTagRepo(db)
 	userRepo := repository.NewUserRepo(db)
+	siteMetricRepo := repository.NewSiteMetricRepo(db)
 
 	// 拦截链启动
 	h := &handler.Handler{
-		Article:  handler.NewArticleHandler(service.NewArticleService(articleRepo, categoryRepo, tagRepo)),
-		Category: handler.NewCategoryHandler(service.NewCategoryService(categoryRepo)),
-		Tag:      handler.NewTagHandler(service.NewTagService(tagRepo)),
-		Health:   handler.NewHealthHandler(db),
-		Auth:     handler.NewAuthHandler(service.NewAuthService(userRepo, cfg.JWT.Secret, cfg.JWT.ExpiresIn)),
+		Article:    handler.NewArticleHandler(service.NewArticleService(articleRepo, categoryRepo, tagRepo)),
+		Category:   handler.NewCategoryHandler(service.NewCategoryService(categoryRepo)),
+		Tag:        handler.NewTagHandler(service.NewTagService(tagRepo)),
+		Health:     handler.NewHealthHandler(db),
+		Auth:       handler.NewAuthHandler(service.NewAuthService(userRepo, cfg.JWT.Secret, cfg.JWT.ExpiresIn)),
+		SiteMetric: handler.NewSiteMetricHandler(service.NewSiteMetricService(siteMetricRepo)),
 	}
 
 	// 启动
