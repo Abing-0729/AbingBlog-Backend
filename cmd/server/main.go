@@ -22,6 +22,7 @@ func main() {
 	articleRepo := repository.NewArticleRepo(db)
 	categoryRepo := repository.NewCategoryRepo(db)
 	tagRepo := repository.NewTagRepo(db)
+	userRepo := repository.NewUserRepo(db)
 
 	// 拦截链启动
 	h := &handler.Handler{
@@ -29,10 +30,11 @@ func main() {
 		Category: handler.NewCategoryHandler(service.NewCategoryService(categoryRepo)),
 		Tag:      handler.NewTagHandler(service.NewTagService(tagRepo)),
 		Health:   handler.NewHealthHandler(db),
+		Auth:     handler.NewAuthHandler(service.NewAuthService(userRepo, cfg.JWT.Secret, cfg.JWT.ExpiresIn)),
 	}
 
 	// 启动
-	r := router.Setup(h)
+	r := router.Setup(h, cfg.JWT.Secret)
 	log.Printf("server running at http://localhost:%d", cfg.Server.Port)
 	if err := r.Run(fmt.Sprintf(":%d", cfg.Server.Port)); err != nil {
 		log.Fatal(err)

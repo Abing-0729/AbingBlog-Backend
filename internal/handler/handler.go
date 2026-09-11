@@ -6,4 +6,5 @@ type Handler struct {
 	Category *CategoryHandler
 	Tag      *TagHandler
 	Health   *HealthHandler
+	Auth     *AuthHandler
 }

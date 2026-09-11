@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -40,6 +41,7 @@ func Load() *Config {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./configs")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -49,10 +51,23 @@ func Load() *Config {
 	if err := viper.Unmarshal(&cfg); err != nil {
 		log.Fatalf("解析配置失败: %v", err)
 	}
+	if err := cfg.JWT.Validate(); err != nil {
+		log.Fatalf("JWT 配置无效: %v", err)
+	}
 	return &cfg
 }
 
 type JWTConfig struct {
 	Secret    string `mapstructure:"secret"`
 	ExpiresIn int    `mapstructure:"expires_in"`
+}
+
+func (j JWTConfig) Validate() error {
+	if len(j.Secret) < 32 {
+		return fmt.Errorf("secret 长度不能少于 32 个字符")
+	}
+	if j.ExpiresIn <= 0 {
+		return fmt.Errorf("expires_in 必须大于 0")
+	}
+	return nil
 }

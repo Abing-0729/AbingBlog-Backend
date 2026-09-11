@@ -2,20 +2,21 @@ package router
 
 import (
 	"abingblog-backend/internal/handler"
+	"abingblog-backend/internal/middle"
 
 	"github.com/gin-gonic/gin"
 )
 
 // Setup 注册所有路由。路由分组即权限边界：
 //   - /api/v1 公共接口：游客可用，只暴露已发布内容
-//   - /api/v1/admin 后台接口：下一迭代挂 JWT 中间件后才是真正私有
-//   - TODO(JWT)：在 admin 分组挂鉴权中间件，未登录一律 401
+//   - /api/v1/admin 后台接口：必须携带有效 JWT
 //   - TODO(CORS)：前后端联调时给前端 dev server 加跨域白名单
-func Setup(h *handler.Handler) *gin.Engine {
+func Setup(h *handler.Handler, jwtSecret string) *gin.Engine {
 	r := gin.Default()
 
 	v1 := r.Group("/api/v1")
 	{
+		v1.POST("/auth/login", h.Auth.Login)
 		v1.GET("/articles", h.Article.List)
 		v1.GET("/articles/:id", h.Article.Get)
 		v1.GET("/categories", h.Category.List)
@@ -23,6 +24,7 @@ func Setup(h *handler.Handler) *gin.Engine {
 		v1.GET("/healthz", h.Health.Check)
 
 		admin := v1.Group("/admin")
+		admin.Use(middle.JWTAuth(jwtSecret))
 		{
 			admin.GET("/articles", h.Article.AdminList)
 			admin.POST("/articles", h.Article.Create)
