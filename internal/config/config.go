@@ -11,6 +11,7 @@ import (
 type Config struct {
 	Server ServerConfig `mapstructure:"server"`
 	MySQL  MySQLConfig  `mapstructure:"mysql"`
+	JWT    JWTConfig    `mapstructure:"jwt"`
 }
 
 // ServerConfig HTTP 服务配置
@@ -49,4 +50,9 @@ func Load() *Config {
 		log.Fatalf("解析配置失败: %v", err)
 	}
 	return &cfg
+}
+
+type JWTConfig struct {
+	Secret    string `mapstructure:"secret"`
+	ExpiresIn int    `mapstructure:"expires_in"`
 }
