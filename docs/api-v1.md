@@ -44,6 +44,7 @@
 | 表 | 关键字段 |
 |---|---|
 | users | id, username, password(bcrypt), created_at |
+| site_metrics | id, start_count |
 | categories | id, name, slug, sort, created_at |
 | tags | id, name, created_at |
 | articles | id, title, content(Markdown), summary, cover, category_id, status(draft/published), view_count, published_at, created_at, updated_at, deleted_at(软删) |
@@ -79,6 +80,11 @@
 - 响应：`{ "status": "ok", "db": "ok" }`
 
 > 说明：不单独做「首页聚合接口」。首页 = 文章列表 + 分类 + 标签三个接口，前端并发请求自行组合，保持后端简单。
+
+### POST /visits/start —— 记录一次启动
+- 无需登录；访客点击街机入口的 `PRESS START` 时调用一次。
+- 响应：`data: { "start_count": 1 }`
+- `start_count` 持久化在站点指标表中，用于入口屏幕显示累计启动次数。
 
 ## 4. 认证与后台接口（JWT）
 

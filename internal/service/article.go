@@ -121,8 +121,7 @@ func (s *ArticleService) Create(req CreateArticleReq) (*model.Article, error) {
 		Status:     req.Status,
 	}
 	if req.Status == "published" {
-		now := time.Now()
-		a.PublishedAt = &now
+		a.PublishedAt = new(time.Now())
 	}
 	if err := s.article.Create(a); err != nil {
 		return nil, err
@@ -160,8 +159,7 @@ func (s *ArticleService) Update(id uint, req CreateArticleReq) (*model.Article, 
 	switch req.Status {
 	case "published":
 		if a.PublishedAt == nil { // 保留首次发布时间，重新发布不刷新
-			now := time.Now()
-			a.PublishedAt = &now
+			a.PublishedAt = new(time.Now())
 		}
 	case "draft":
 		a.PublishedAt = nil
@@ -203,8 +201,7 @@ func (s *ArticleService) UpdateStatus(id uint, status string) (*model.Article, e
 	}
 	var publishedAt *time.Time
 	if status == "published" && a.PublishedAt == nil {
-		now := time.Now()
-		publishedAt = &now
+		publishedAt = new(time.Now())
 	}
 	if err := s.article.UpdateStatus(id, status, publishedAt); err != nil {
 		return nil, err

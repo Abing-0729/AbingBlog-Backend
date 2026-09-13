@@ -14,6 +14,12 @@ type User struct {
 	CreatedAt time.Time
 }
 
+// SiteMetric 保存站点级运行指标；ID 固定为 1，便于原子递增。
+type SiteMetric struct {
+	ID         uint `gorm:"primaryKey"`
+	StartCount uint `gorm:"not null;default:0"`
+}
+
 // Category 文章分类
 type Category struct {
 	ID        uint   `gorm:"primaryKey"`

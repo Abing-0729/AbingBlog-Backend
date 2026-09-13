@@ -24,8 +24,7 @@ func Fail(c *gin.Context, httpStatus, bizCode int, message string) {
 //   - 业务错误（*errcode.BizError）→ 映射为对应 HTTP 状态码返回给前端
 //   - 未知错误 → 只记日志，返回 500，不把内部细节暴露给前端
 func Error(c *gin.Context, err error) {
-	var be *errcode.BizError
-	if errors.As(err, &be) {
+	if be, ok := errors.AsType[*errcode.BizError](err); ok {
 		status := http.StatusBadRequest
 		switch be.Code {
 		case errcode.CodeArticleNotFound, errcode.CodeCategoryNotFound, errcode.CodeTagNotFound:
