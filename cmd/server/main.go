@@ -22,17 +22,25 @@ func main() {
 	articleRepo := repository.NewArticleRepo(db)
 	categoryRepo := repository.NewCategoryRepo(db)
 	tagRepo := repository.NewTagRepo(db)
+	userRepo := repository.NewUserRepo(db)
+
+	userSvc := service.NewUserService(userRepo, cfg)
+	// 启动时确保初始管理员存在（账号已存在则跳过）
+	if err := userSvc.SeedAdmin(); err != nil {
+		log.Fatalf("初始化管理员失败: %v", err)
+	}
 
 	// 拦截链启动
 	h := &handler.Handler{
 		Article:  handler.NewArticleHandler(service.NewArticleService(articleRepo, categoryRepo, tagRepo)),
 		Category: handler.NewCategoryHandler(service.NewCategoryService(categoryRepo)),
 		Tag:      handler.NewTagHandler(service.NewTagService(tagRepo)),
+		User:     handler.NewUserHandler(userSvc),
 		Health:   handler.NewHealthHandler(db),
 	}
 
 	// 启动
-	r := router.Setup(h)
+	r := router.Setup(h, cfg.JWT.Secret)
 	log.Printf("server running at http://localhost:%d", cfg.Server.Port)
 	if err := r.Run(fmt.Sprintf(":%d", cfg.Server.Port)); err != nil {
 		log.Fatal(err)

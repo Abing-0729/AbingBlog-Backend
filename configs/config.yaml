@@ -9,3 +9,12 @@ mysql:
   password: blog123456   # 与 docker-compose.yml 的 MYSQL_ROOT_PASSWORD 一致（仅本地开发）
   dbname: blog      # 数据库不存在会自动创建
   charset: utf8mb4
+jwt:
+  secret: "123" # 后续通过环境变量进行覆盖
+  expire_hours: 24
+
+# 初始管理员账号：首次启动时若该用户不存在则自动创建（密码会 bcrypt 后入库）
+# 生产环境用环境变量覆盖，切勿沿用下面的默认值
+admin:
+  username: "admin"
+  password: "admin123456"

@@ -11,11 +11,25 @@ import (
 type Config struct {
 	Server ServerConfig `mapstructure:"server"`
 	MySQL  MySQLConfig  `mapstructure:"mysql"`
+	JWT    JWTConfig    `mapstructure:"jwt"`
+	Admin  AdminConfig  `mapstructure:"admin"`
 }
 
 // ServerConfig HTTP 服务配置
 type ServerConfig struct {
 	Port int `mapstructure:"port"`
+}
+
+// JWTConfig 签发/校验 token 的配置
+type JWTConfig struct {
+	Secret      string `mapstructure:"secret"`       // 签名密钥，生产用环境变量覆盖，绝不用默认值
+	ExpireHours int    `mapstructure:"expire_hours"` // token 有效期（小时）
+}
+
+// AdminConfig 初始管理员账号。启动 seed 用，账号已存在则跳过；生产用环境变量注入
+type AdminConfig struct {
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
 }
 
 // MySQLConfig 数据库连接配置

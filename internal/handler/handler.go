@@ -5,5 +5,6 @@ type Handler struct {
 	Article  *ArticleHandler
 	Category *CategoryHandler
 	Tag      *TagHandler
+	User     *UserHandler
 	Health   *HealthHandler
 }

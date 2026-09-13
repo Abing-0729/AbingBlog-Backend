@@ -2,6 +2,7 @@ package router
 
 import (
 	"abingblog-backend/internal/handler"
+	"abingblog-backend/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,7 +12,7 @@ import (
 //   - /api/v1/admin 后台接口：下一迭代挂 JWT 中间件后才是真正私有
 //   - TODO(JWT)：在 admin 分组挂鉴权中间件，未登录一律 401
 //   - TODO(CORS)：前后端联调时给前端 dev server 加跨域白名单
-func Setup(h *handler.Handler) *gin.Engine {
+func Setup(h *handler.Handler, secret string) *gin.Engine {
 	r := gin.Default()
 
 	v1 := r.Group("/api/v1")
@@ -21,8 +22,9 @@ func Setup(h *handler.Handler) *gin.Engine {
 		v1.GET("/categories", h.Category.List)
 		v1.GET("/tags", h.Tag.List)
 		v1.GET("/healthz", h.Health.Check)
-
+		v1.POST("/login", h.User.Login)
 		admin := v1.Group("/admin")
+		admin.Use(middleware.AuthRequired(secret))
 		{
 			admin.GET("/articles", h.Article.AdminList)
 			admin.POST("/articles", h.Article.Create)
@@ -37,6 +39,7 @@ func Setup(h *handler.Handler) *gin.Engine {
 			admin.POST("/tags", h.Tag.Create)
 			admin.PUT("/tags/:id", h.Tag.Update)
 			admin.DELETE("/tags/:id", h.Tag.Delete)
+
 		}
 	}
 	return r
