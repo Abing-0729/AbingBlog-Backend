@@ -9,11 +9,13 @@ import (
 
 // Setup 注册所有路由。路由分组即权限边界：
 //   - /api/v1 公共接口：游客可用，只暴露已发布内容
-//   - /api/v1/admin 后台接口：下一迭代挂 JWT 中间件后才是真正私有
-//   - TODO(JWT)：在 admin 分组挂鉴权中间件，未登录一律 401
-//   - TODO(CORS)：前后端联调时给前端 dev server 加跨域白名单
-func Setup(h *handler.Handler, secret string) *gin.Engine {
+//   - /api/v1/admin 后台接口：挂 JWT 中间件，未登录一律 401
+//
+// CORS 中间件挂在最外层（gin.Default 之后、路由分组之前），保证预检 OPTIONS
+// 和所有响应都带上跨域头；allowOrigins 是前端 dev server 白名单。
+func Setup(h *handler.Handler, secret string, allowOrigins []string) *gin.Engine {
 	r := gin.Default()
+	r.Use(middleware.Cors(allowOrigins))
 
 	v1 := r.Group("/api/v1")
 	{

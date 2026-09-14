@@ -1,6 +1,7 @@
 package main
 
 import (
+	"abingblog-backend/internal/cache"
 	"fmt"
 	"log"
 
@@ -15,7 +16,7 @@ import (
 func main() {
 	// 启动配置
 	cfg := config.Load()
-
+	cache.Init(cfg)
 	db := database.Init(cfg) // 连接 MySQL（自动建库建表）
 
 	// 依赖注入，调用链：HTTP 请求 → handler → service → repository → GORM → MySQL
@@ -40,7 +41,7 @@ func main() {
 	}
 
 	// 启动
-	r := router.Setup(h, cfg.JWT.Secret)
+	r := router.Setup(h, cfg.JWT.Secret, cfg.CORS.AllowOrigins)
 	log.Printf("server running at http://localhost:%d", cfg.Server.Port)
 	if err := r.Run(fmt.Sprintf(":%d", cfg.Server.Port)); err != nil {
 		log.Fatal(err)

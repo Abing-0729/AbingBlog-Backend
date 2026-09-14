@@ -13,11 +13,31 @@ type Config struct {
 	MySQL  MySQLConfig  `mapstructure:"mysql"`
 	JWT    JWTConfig    `mapstructure:"jwt"`
 	Admin  AdminConfig  `mapstructure:"admin"`
+	CORS   CORSConfig   `mapstructure:"cors"`
+	Redis  RedisConfig  `mapstructure:"redis"`
+}
+
+// RedisConfig 缓存连接配置。生产环境用环境变量覆盖 host/password
+type RedisConfig struct {
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	Password string `mapstructure:"password"` // 无密码则留空
+	DB       int    `mapstructure:"db"`       // 逻辑库编号，默认 0
+}
+
+// Addr 拼接 go-redis 需要的 "host:port"
+func (r RedisConfig) Addr() string {
+	return fmt.Sprintf("%s:%d", r.Host, r.Port)
 }
 
 // ServerConfig HTTP 服务配置
 type ServerConfig struct {
 	Port int `mapstructure:"port"`
+}
+
+// CORSConfig 跨域白名单。允许的前端来源列表，生产环境用环境变量覆盖
+type CORSConfig struct {
+	AllowOrigins []string `mapstructure:"allow_origins"`
 }
 
 // JWTConfig 签发/校验 token 的配置

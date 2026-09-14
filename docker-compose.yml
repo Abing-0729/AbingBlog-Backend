@@ -1,6 +1,6 @@
-# 本地开发环境编排：目前只有 MySQL，后续逐步加入 Redis、MQ、backend 服务
+# 本地开发环境编排：MySQL + Redis，后续逐步加入 MQ、backend 服务
 # 用法：docker compose up -d         停止：docker compose down
-# 数据持久化在命名卷 mysql-data 里，容器删了数据还在（down 不会删卷，down -v 才会）
+# 数据持久化在命名卷里，容器删了数据还在（down 不会删卷，down -v 才会）
 services:
   mysql:
     image: mysql:8.0
@@ -24,5 +24,24 @@ services:
       timeout: 3s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    container_name: blog-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"   # 宿主 6379 → 容器 6379；本机若已占用可改宿主端口
+    command:
+      # appendonly 开启 AOF 持久化，重启不丢缓存数据（缓存虽可重建，但避免冷启动击穿 DB）
+      - --appendonly
+      - "yes"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
 volumes:
   mysql-data:
+  redis-data:
