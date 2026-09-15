@@ -15,6 +15,9 @@ const (
 	CodeBadStatus        = 1007 // 文章状态非法（只能 draft/published）
 	CodeNameEmpty        = 1008 // 名称不能为空
 	CodeNameExists       = 1009 // 名称已存在
+	CodeProjectNotFound  = 1010 // 项目不存在
+	CodeSlugEmpty        = 1011 // 项目 slug 不能为空
+	CodeSlugExists       = 1012 // 项目 slug 已存在
 	CodeInternal         = 5000 // 服务器内部错误
 )
 

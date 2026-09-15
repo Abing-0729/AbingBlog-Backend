@@ -53,3 +53,21 @@ type Article struct {
 	UpdatedAt   time.Time
 	DeletedAt   gorm.DeletedAt `gorm:"index"` // 软删除：DELETE 只打标记，数据可恢复
 }
+
+// Project 作品/项目：门户「SELECTED WORK」列表的数据源。
+// 结构对齐前端 ProjectSummary（slug/name/detail/stack/githubUrl/demoUrl），
+// 复用 article 的 status（draft/published）与 sort 排序约定。
+type Project struct {
+	ID        uint   `gorm:"primaryKey"`
+	Slug      string `gorm:"size:64;uniqueIndex"` // URL 友好标识，前端用作 key
+	Name      string `gorm:"size:128"`
+	Detail    string `gorm:"size:500"` // 一句话简介
+	Stack     string `gorm:"size:255"` // 技术栈展示串，如 "GO · VUE · MYSQL"
+	GithubURL string `gorm:"size:500"`
+	DemoURL   string `gorm:"size:500"`
+	Sort      int    `gorm:"default:0"`             // 排序权重，越小越靠前
+	Status    string `gorm:"size:16;default:draft"` // draft 草稿 / published 已发布
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"` // 软删除
+}

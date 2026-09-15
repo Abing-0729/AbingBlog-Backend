@@ -23,3 +23,13 @@ func (h *SiteMetricHandler) RecordStart(c *gin.Context) {
 	}
 	response.OK(c, gin.H{"start_count": count})
 }
+
+// Total 只读总量：进屏幕展示用，绝不自增
+func (h *SiteMetricHandler) Total(c *gin.Context) {
+	count, err := h.svc.Total()
+	if err != nil {
+		response.Fail(c, http.StatusInternalServerError, errcode.CodeInternal, "读取启动次数失败")
+		return
+	}
+	response.OK(c, gin.H{"start_count": count})
+}

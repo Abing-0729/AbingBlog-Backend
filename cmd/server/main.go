@@ -24,6 +24,8 @@ func main() {
 	categoryRepo := repository.NewCategoryRepo(db)
 	tagRepo := repository.NewTagRepo(db)
 	userRepo := repository.NewUserRepo(db)
+	metricRepo := repository.NewSiteMetricRepo(db)
+	projectRepo := repository.NewProjectRepo(db)
 
 	userSvc := service.NewUserService(userRepo, cfg)
 	// 启动时确保初始管理员存在（账号已存在则跳过）
@@ -38,6 +40,8 @@ func main() {
 		Tag:      handler.NewTagHandler(service.NewTagService(tagRepo)),
 		User:     handler.NewUserHandler(userSvc),
 		Health:   handler.NewHealthHandler(db),
+		Metric:   handler.NewSiteMetricHandler(service.NewSiteMetricService(metricRepo)),
+		Project:  handler.NewProjectHandler(service.NewProjectService(projectRepo)),
 	}
 
 	// 启动

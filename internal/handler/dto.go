@@ -70,3 +70,34 @@ func toArticleDTO(a *model.Article, withContent bool) articleDTO {
 	}
 	return d
 }
+
+type projectDTO struct {
+	ID        uint      `json:"id"`
+	Slug      string    `json:"slug"`
+	Name      string    `json:"name"`
+	Detail    string    `json:"detail"`
+	Stack     string    `json:"stack"`
+	GithubURL string    `json:"github_url"`
+	DemoURL   string    `json:"demo_url"`
+	Sort      int       `json:"sort"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// toProjectDTO 模型 → DTO
+func toProjectDTO(p *model.Project) projectDTO {
+	return projectDTO{
+		ID:        p.ID,
+		Slug:      p.Slug,
+		Name:      p.Name,
+		Detail:    p.Detail,
+		Stack:     p.Stack,
+		GithubURL: p.GithubURL,
+		DemoURL:   p.DemoURL,
+		Sort:      p.Sort,
+		Status:    p.Status,
+		CreatedAt: p.CreatedAt,
+		UpdatedAt: p.UpdatedAt,
+	}
+}

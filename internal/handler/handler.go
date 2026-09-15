@@ -7,4 +7,6 @@ type Handler struct {
 	Tag      *TagHandler
 	User     *UserHandler
 	Health   *HealthHandler
+	Metric   *SiteMetricHandler
+	Project  *ProjectHandler
 }

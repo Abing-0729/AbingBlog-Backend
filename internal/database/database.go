@@ -46,6 +46,7 @@ func Init(cfg *config.Config) *gorm.DB {
 		&model.Category{},
 		&model.Tag{},
 		&model.Article{},
+		&model.Project{},
 	); err != nil {
 		log.Fatalf("自动迁移失败: %v", err)
 	}

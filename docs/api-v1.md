@@ -75,15 +75,26 @@
 ### GET /tags —— 标签列表
 - 响应：`[ { "id": 1, "name": "后端", "article_count": 3 } ]`
 
+### GET /projects —— 项目列表（作品墙）
+- 只返回已发布项目，按 `sort` 升序、`id` 降序排列，分页参数同文章列表（`page` / `page_size`）。
+- 响应：`data: { "list": [ { "id": 1, "slug": "abingblog", "name": "ABINGBLOG", "detail": "...", "stack": "GO · VUE · MYSQL", "github_url": "", "demo_url": "", "sort": 0, "status": "published", "created_at": "...", "updated_at": "..." } ], "total": 3, "page": 1, "page_size": 10 }`
+- 前端 `ProjectSummary` 的 `githubUrl` / `demoUrl` 对应 `github_url` / `demo_url`，由前端映射层转换。
+
 ### GET /healthz —— 健康检查
 - 供 Docker / CD 部署做健康检查，检查 DB 连通性
 - 响应：`{ "status": "ok", "db": "ok" }`
 
 > 说明：不单独做「首页聚合接口」。首页 = 文章列表 + 分类 + 标签三个接口，前端并发请求自行组合，保持后端简单。
 
+### GET /visits —— 读取累计启动次数（只读）
+- 无需登录；入口屏幕加载时调用，纯展示。
+- **绝不自增**：刷新/重播随便调，数字不变。计数行还没建过时返回 0。
+- 响应：`data: { "start_count": 42 }`
+
 ### POST /visits/start —— 记录一次启动
 - 无需登录；访客点击街机入口的 `PRESS START` 时调用一次。
-- 响应：`data: { "start_count": 1 }`
+- 原子自增（`UPDATE ... start_count = start_count + 1`），并发下不丢计数。
+- 响应：`data: { "start_count": 43 }`（返回自增后的新值）
 - `start_count` 持久化在站点指标表中，用于入口屏幕显示累计启动次数。
 
 ## 4. 认证与后台接口（JWT）
@@ -115,6 +126,15 @@
 | PUT | /admin/tags/:id | 更新 |
 | DELETE | /admin/tags/:id | 删除，同时清关联 |
 
+### 后台项目（`/admin/*`，均需 JWT）
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | /admin/projects | 列表含草稿，支持 `status` 筛选，分页同公共列表 |
+| POST | /admin/projects | 创建：`{ slug, name, detail?, stack?, github_url?, demo_url?, sort?, status }` |
+| PUT | /admin/projects/:id | 更新，字段同创建（全量更新） |
+| DELETE | /admin/projects/:id | 软删除 |
+
 ### 业务错误码（初版）
 
 | code | 含义 |
@@ -130,6 +150,9 @@
 | 1007 | 文章状态非法（只能 draft/published） |
 | 1008 | 名称不能为空 |
 | 1009 | 名称已存在 |
+| 1010 | 项目不存在 |
+| 1011 | 项目 slug 不能为空 |
+| 1012 | 项目 slug 已存在 |
 | 5000 | 服务器内部错误 |
 
 ## 5. Redis 缓存与 MQ 异步业务（初版方案，实现阶段细化）
