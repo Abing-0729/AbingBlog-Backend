@@ -17,11 +17,25 @@ services:
       timeout: 3s
       retries: 20
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["--appendonly", "yes"]   # AOF 持久化，重启不丢缓存，避免冷启动击穿 DB
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   server:
     image: ${IMAGE:?IMAGE is required}
     restart: unless-stopped
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     environment:
       SERVER_PORT: 8080
@@ -31,10 +45,15 @@ services:
       MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
       MYSQL_DBNAME: ${MYSQL_DATABASE:-blog}
       MYSQL_CHARSET: utf8mb4
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      REDIS_DB: 0
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-86400}
+      JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
     ports:
       - "127.0.0.1:${SERVER_PORT:-8080}:8080"
 
 volumes:
   mysql-data:
+  redis-data:
