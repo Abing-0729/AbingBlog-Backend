@@ -41,6 +41,19 @@ func (s *ArticleService) List(q ArticleQuery) ([]model.Article, int64, error) {
 	return s.article.List(q.Page, q.PageSize, q.Status, q.CategorySlug, q.Tag, q.Keyword)
 }
 
+// GetByID 后台按 ID 查文章：不限状态（含草稿）、带正文、不自增浏览量。
+// 后台编辑时用，区别于公共详情的 GetPublicByID。
+func (s *ArticleService) GetByID(id uint) (*model.Article, error) {
+	a, err := s.article.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if a == nil {
+		return nil, errcode.New(errcode.CodeArticleNotFound, "文章不存在")
+	}
+	return a, nil
+}
+
 // GetPublicByID 公共详情：只允许已发布文章；浏览量 +1
 func (s *ArticleService) GetPublicByID(id uint) (*model.Article, error) {
 	a, err := s.article.GetPublishedByID(id)

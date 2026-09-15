@@ -32,6 +32,7 @@ func Setup(h *handler.Handler, secret string, allowOrigins []string) *gin.Engine
 		admin.Use(middleware.AuthRequired(secret))
 		{
 			admin.GET("/articles", h.Article.AdminList)
+			admin.GET("/articles/:id", h.Article.AdminGet)
 			admin.POST("/articles", h.Article.Create)
 			admin.PUT("/articles/:id", h.Article.Update)
 			admin.DELETE("/articles/:id", h.Article.Delete)

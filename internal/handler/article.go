@@ -61,6 +61,21 @@ func (h *ArticleHandler) AdminList(c *gin.Context) {
 	response.OK(c, gin.H{"list": dtos, "total": total, "page": q.Page, "page_size": q.PageSize})
 }
 
+// AdminGet 文章详情（后台）：不限状态（含草稿），带 Markdown 正文，供编辑器加载
+func (h *ArticleHandler) AdminGet(c *gin.Context) {
+	id := pathParamUint(c)
+	if id == 0 {
+		response.Fail(c, http.StatusBadRequest, errcode.CodeBadParam, "无效的文章 ID")
+		return
+	}
+	a, err := h.svc.GetByID(id)
+	if err != nil {
+		response.Error(c, err)
+		return
+	}
+	response.OK(c, toArticleDTO(a, true))
+}
+
 // Get 文章详情（公共）：只允许已发布
 func (h *ArticleHandler) Get(c *gin.Context) {
 	id := pathParamUint(c)

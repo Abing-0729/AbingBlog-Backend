@@ -110,6 +110,7 @@
 | 方法 | 路径 | 说明 |
 |---|---|---|
 | GET | /admin/articles | 列表含草稿，支持 `status` 筛选，分页同公共列表 |
+| GET | /admin/articles/:id | 单条详情（后台编辑用）：不限状态含草稿，返回带 Markdown 正文 |
 | POST | /admin/articles | 创建：`{ title, content, summary?, cover?, category_id, tag_ids[], status }` |
 | PUT | /admin/articles/:id | 更新，字段同创建（全量更新） |
 | DELETE | /admin/articles/:id | 软删除 |
