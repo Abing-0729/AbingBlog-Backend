@@ -85,4 +85,19 @@ jobs:
             docker compose -f docker-compose.prod.yml pull server
             docker compose -f docker-compose.prod.yml up -d
             docker image prune -f
-            curl --fail --retry 10 --retry-delay 3 http://127.0.0.1:${SERVER_PORT:-8080}/api/v1/healthz
+
+            # 等 server 真正就绪：HTTP 服务是启动流程的最后一步（连 Redis→建库→迁移→seed 之后才 Listen），
+            # 首启要几十秒，直接 curl 会撞上「Empty reply」。这里循环探测，任一失败都继续等，最多约 150s。
+            for i in $(seq 1 30); do
+              if curl --fail --silent --max-time 5 "http://127.0.0.1:${SERVER_PORT:-8080}/api/v1/healthz" >/dev/null 2>&1; then
+                echo "healthz OK"
+                exit 0
+              fi
+              echo "server not ready yet ($i/30), retrying in 5s"
+              sleep 5
+            done
+
+            # 等不到就打印容器状态和日志，方便定位
+            docker compose -f docker-compose.prod.yml ps
+            docker compose -f docker-compose.prod.yml logs --no-color --tail=200 server
+            exit 1

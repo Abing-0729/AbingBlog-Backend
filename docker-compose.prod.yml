@@ -53,6 +53,13 @@ services:
       JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
     ports:
       - "127.0.0.1:${SERVER_PORT:-8080}:8080"
+    healthcheck:
+      # alpine 里只有 busybox wget、没有 curl；healthz 会顺带 ping DB，DB 也正常才算 healthy
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/api/v1/healthz || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s   # 首启要跑 AutoMigrate+seed，给足启动时间
 
 volumes:
   mysql-data:
