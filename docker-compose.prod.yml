@@ -1,6 +1,6 @@
 services:
   mysql:
-    image: mysql:8.0
+    image: ${IMAGE_BASE:?IMAGE_BASE is required}-mysql:8.0
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
@@ -18,7 +18,7 @@ services:
       retries: 20
 
   redis:
-    image: redis:7-alpine
+    image: ${IMAGE_BASE:?IMAGE_BASE is required}-redis:7-alpine
     restart: unless-stopped
     command: ["--appendonly", "yes"]   # AOF 持久化，重启不丢缓存，避免冷启动击穿 DB
     volumes:

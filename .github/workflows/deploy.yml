@@ -32,6 +32,18 @@ jobs:
             ${{ steps.image.outputs.image }}:${{ github.sha }}
             ${{ steps.image.outputs.image }}:latest
 
+      # 把 mysql/redis 基础镜像中转进 GHCR，让生产服务器只访问 ghcr.io，绕开国内连不上 Docker Hub 的问题
+      - name: Mirror mysql/redis images to GHCR
+        env:
+          IMAGE: ${{ steps.image.outputs.image }}
+        run: |
+          docker pull mysql:8.0
+          docker pull redis:7-alpine
+          docker tag mysql:8.0 "$IMAGE-mysql:8.0"
+          docker tag redis:7-alpine "$IMAGE-redis:7-alpine"
+          docker push "$IMAGE-mysql:8.0"
+          docker push "$IMAGE-redis:7-alpine"
+
   deploy:
     needs: publish
     runs-on: ubuntu-latest
@@ -56,6 +68,7 @@ jobs:
             cd "$DEPLOY_PATH"
             printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
             export IMAGE MYSQL_ROOT_PASSWORD JWT_SECRET
+            export IMAGE_BASE="${IMAGE%:*}"   # 去掉 :sha，得到 ghcr.io/<owner>/<repo>，拼出 mysql/redis 镜像名
             docker compose -f docker-compose.prod.yml pull server
             docker compose -f docker-compose.prod.yml up -d
             docker image prune -f
