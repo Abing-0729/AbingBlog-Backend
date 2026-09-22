@@ -74,6 +74,7 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
+          command_timeout: 30m   # 默认 10m；mysql:8.0 镜像约 230MB，国内到 ghcr.io 慢，首拉需更久
           envs: IMAGE,DEPLOY_PATH,GHCR_USERNAME,GHCR_TOKEN,MYSQL_ROOT_PASSWORD,JWT_SECRET
           script: |
             set -eu
