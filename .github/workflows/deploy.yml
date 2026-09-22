@@ -39,10 +39,13 @@ jobs:
         run: |
           docker pull mysql:8.0
           docker pull redis:7-alpine
+          docker pull nginx:1.27-alpine
           docker tag mysql:8.0 "$IMAGE-mysql:8.0"
           docker tag redis:7-alpine "$IMAGE-redis:7-alpine"
+          docker tag nginx:1.27-alpine "$IMAGE-nginx:1.27-alpine"
           docker push "$IMAGE-mysql:8.0"
           docker push "$IMAGE-redis:7-alpine"
+          docker push "$IMAGE-nginx:1.27-alpine"
 
   deploy:
     needs: publish
