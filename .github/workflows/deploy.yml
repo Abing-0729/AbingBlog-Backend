@@ -49,6 +49,18 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      - uses: actions/checkout@v4
+
+      # 把最新 docker-compose.prod.yml 同步到服务器，避免服务器残留旧版编排文件（旧版 mysql/redis 仍指向 Docker Hub）
+      - name: Sync compose file to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: docker-compose.prod.yml
+          target: ${{ secrets.DEPLOY_PATH }}
+
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.2
         env:
