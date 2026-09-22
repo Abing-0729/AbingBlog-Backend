@@ -3,7 +3,7 @@
 # 用法（服务器上）：docker compose up -d
 services:
   gateway:
-    image: nginx:1.27-alpine
+    image: ghcr.io/abing-0729/abingblog-backend-nginx:1.27-alpine
     restart: unless-stopped
     # host 网络：容器直接共享宿主机网络栈，才能访问前后端容器绑定的
     # 127.0.0.1:8080 / 127.0.0.1:8081。注意这是 Linux 专属特性，
