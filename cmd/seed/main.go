@@ -20,12 +20,11 @@ func main() {
 	db := database.Init(cfg)
 	repo := repository.NewUserRepo(db)
 
-	username := envOrDefault("ABINGBLOG_ADMIN_USERNAME", "A")
-	password := envOrDefault("ABINGBLOG_ADMIN_PASSWORD", "Lzb060729")
+	username := os.Getenv("ABINGBLOG_ADMIN_USER")
+	password := os.Getenv("ABINGBLOG_ADMIN_PASSWORD")
 	if username == "" || password == "" {
 		log.Fatal("管理员用户名和密码不能为空")
 	}
-
 	existing, err := repo.GetByUsername(username)
 	if err != nil {
 		log.Fatalf("查询管理员失败: %v", err)
