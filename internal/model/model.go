@@ -54,6 +54,15 @@ type Article struct {
 	DeletedAt   gorm.DeletedAt `gorm:"index"` // 软删除：DELETE 只打标记，数据可恢复
 }
 
+// Comment 评论:对于文章或者是博客的评论，或者游水发言
+type Comment struct {
+	ID        uint      `gorm:"primary_key;AUTO_INCREMENT"`
+	ParentID  *uint     `gorm:"index;default null"` //为nil时表示顶级评论
+	Author    string    `gorm:"type:varchar(64);not null"`
+	Content   string    `gorm:"type:text;not null"`
+	CreatedAt time.Time `gorm:"index"`
+}
+
 // Project 作品/项目：门户「SELECTED WORK」列表的数据源。
 // 结构对齐前端 ProjectSummary（slug/name/detail/stack/githubUrl/demoUrl），
 // 复用 article 的 status（draft/published）与 sort 排序约定。
@@ -70,4 +79,26 @@ type Project struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"` // 软删除
+}
+
+// FriendLink 友链：访客可自助提交（按 X-Visitor-ID 认领归属），管理员审核后才展示。
+// Status 状态机：0 待审核 → 1 已上架 / 2 已驳回；访客修改自己的友链会打回 0 重新审核。
+const (
+	FriendLinkPending  = 0 // 待审核（提交后的初始状态）
+	FriendLinkApproved = 1 // 已上架（前台可见）
+	FriendLinkRejected = 2 // 已驳回（管理员否决，前台不可见）
+)
+
+type FriendLink struct {
+	ID          uint           `json:"id" gorm:"primaryKey"`
+	Name        string         `json:"name" gorm:"size:64"`           // 站点名称
+	Avatar      string         `json:"avatar" gorm:"size:500"`        // 头像地址
+	URL         string         `json:"url" gorm:"size:500"`           // 站点地址
+	Description string         `json:"description" gorm:"size:255"`   // 一句话简介
+	Status      int            `json:"status" gorm:"default:0"`       // 状态机，见上方常量
+	Sort        int            `json:"sort" gorm:"default:0"`         // 排序权重，越小越靠前（管理员上架时调整）
+	OwnerID     string         `json:"owner_id" gorm:"size:64;index"` // 提交者访客 UUID（X-Visitor-ID）
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"` // 软删除：访客删除只打标记
 }

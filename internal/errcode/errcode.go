@@ -19,6 +19,14 @@ const (
 	CodeSlugEmpty        = 1011 // 项目 slug 不能为空
 	CodeSlugExists       = 1012 // 项目 slug 已存在
 	CodeInternal         = 5000 // 服务器内部错误
+
+	// 友链 51xx
+	CodeFriendNameEmpty       = 5100 // 友链名称不能为空
+	CodeFriendURLEmpty        = 5101 // 友链地址不能为空
+	CodeFriendNotFound        = 5102 // 友链不存在
+	CodeFriendNotOwner        = 5103 // 只能操作自己提交的友链
+	CodeFriendVisitorRequired = 5104 // 缺少访客标识（X-Visitor-ID）
+	CodeFriendBadStatus       = 5105 // 友链状态非法（只能 0/1/2）
 )
 
 // BizError 业务错误：service 层抛出，handler 层统一映射为 HTTP 响应

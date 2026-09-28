@@ -28,6 +28,13 @@ func Setup(h *handler.Handler, secret string, allowOrigins []string) *gin.Engine
 		v1.GET("/visits", h.Metric.Total)
 		v1.POST("/visits/start", h.Metric.RecordStart)
 		v1.POST("/login", h.User.Login)
+
+		// 友链：前台只读上架列表；访客凭 X-Visitor-ID 自助管理自己的提交
+		v1.GET("/friend-links", h.FriendLink.List)
+		v1.GET("/friend-links/mine", h.FriendLink.Mine)
+		v1.POST("/friend-links/mine", h.FriendLink.Create)
+		v1.PUT("/friend-links/mine/:id", h.FriendLink.UpdateMine)
+		v1.DELETE("/friend-links/mine/:id", h.FriendLink.DeleteMine)
 		admin := v1.Group("/admin")
 		admin.Use(middleware.AuthRequired(secret))
 		{
@@ -50,6 +57,11 @@ func Setup(h *handler.Handler, secret string, allowOrigins []string) *gin.Engine
 			admin.POST("/projects", h.Project.Create)
 			admin.PUT("/projects/:id", h.Project.Update)
 			admin.DELETE("/projects/:id", h.Project.Delete)
+
+			// 友链审核：PUT 时 body 带 status（1 通过 / 2 驳回）即为审核动作
+			admin.GET("/friend-links", h.FriendLink.AdminList)
+			admin.PUT("/friend-links/:id", h.FriendLink.AdminUpdate)
+			admin.DELETE("/friend-links/:id", h.FriendLink.AdminDelete)
 		}
 	}
 	return r
