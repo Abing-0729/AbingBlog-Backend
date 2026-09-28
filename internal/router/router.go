@@ -3,6 +3,7 @@ package router
 import (
 	"abingblog-backend/internal/handler"
 	"abingblog-backend/internal/middleware"
+	"abingblog-backend/internal/repository"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,11 +14,13 @@ import (
 //
 // CORS 中间件挂在最外层（gin.Default 之后、路由分组之前），保证预检 OPTIONS
 // 和所有响应都带上跨域头；allowOrigins 是前端 dev server 白名单。
-func Setup(h *handler.Handler, secret string, allowOrigins []string) *gin.Engine {
+func Setup(h *handler.Handler, secret string, allowOrigins []string, visitRepo *repository.VisitLogRepo) *gin.Engine {
 	r := gin.Default()
 	r.Use(middleware.Cors(allowOrigins))
 
 	v1 := r.Group("/api/v1")
+	// 公共接口挂访问记录中间件：自动记录游客行为（admin/healthz 在中间件内部跳过）
+	v1.Use(middleware.VisitTracker(visitRepo))
 	{
 		v1.GET("/articles", h.Article.List)
 		v1.GET("/articles/:id", h.Article.Get)
@@ -62,6 +65,9 @@ func Setup(h *handler.Handler, secret string, allowOrigins []string) *gin.Engine
 			admin.GET("/friend-links", h.FriendLink.AdminList)
 			admin.PUT("/friend-links/:id", h.FriendLink.AdminUpdate)
 			admin.DELETE("/friend-links/:id", h.FriendLink.AdminDelete)
+
+			admin.GET("/visits", h.Visit.List)
+			admin.GET("/visits/summary", h.Visit.Summary)
 		}
 	}
 	return r

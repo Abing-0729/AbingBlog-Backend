@@ -10,4 +10,5 @@ type Handler struct {
 	Metric     *SiteMetricHandler
 	Project    *ProjectHandler
 	FriendLink *FriendLinkHandler
+	Visit      *VisitLogHandler
 }
