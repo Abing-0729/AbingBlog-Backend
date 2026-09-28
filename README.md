@@ -398,8 +398,8 @@ go mod graph
 | 2 | JWT 登录认证 + 后台接口鉴权 + 环境变量覆盖配置 | ✅ 已完成 |
 | 3 | 作品墙（projects）+ 站点指标（累计启动次数） | ✅ 已完成 |
 | 4 | Docker 化（多阶段构建）+ 生产 compose | ✅ 已完成 |
-| 5 | CI（格式/vet/test/build）+ CD（GHCR + SSH 部署） | 🟡 流水线已就绪，待配置 Secrets 并首次跑通 |
-| 6 | 前后端联调 + 网关编排（Nginx） | 🟡 网关配置已就绪，待部署验证 |
+| 5 | CI（格式/vet/test/build）+ CD（GHCR + SSH 部署） | ✅ 已完成 |
+| 6 | 前后端联调 + 网关编排（Nginx） | ✅ 已完成 |
 | 7 | Redis 缓存（Cache Aside） | 🟡 客户端已接入探活，缓存策略待实现 |
 | 8 | MQ 异步（浏览量落库） | 🔲 待开发 |
 

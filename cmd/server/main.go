@@ -26,6 +26,7 @@ func main() {
 	userRepo := repository.NewUserRepo(db)
 	metricRepo := repository.NewSiteMetricRepo(db)
 	projectRepo := repository.NewProjectRepo(db)
+	friendLinkRepo := repository.NewFriendLinkRepo(db)
 
 	userSvc := service.NewUserService(userRepo, cfg)
 	// 启动时确保初始管理员存在（账号已存在则跳过）
@@ -35,13 +36,14 @@ func main() {
 
 	// 拦截链启动
 	h := &handler.Handler{
-		Article:  handler.NewArticleHandler(service.NewArticleService(articleRepo, categoryRepo, tagRepo)),
-		Category: handler.NewCategoryHandler(service.NewCategoryService(categoryRepo)),
-		Tag:      handler.NewTagHandler(service.NewTagService(tagRepo)),
-		User:     handler.NewUserHandler(userSvc),
-		Health:   handler.NewHealthHandler(db),
-		Metric:   handler.NewSiteMetricHandler(service.NewSiteMetricService(metricRepo)),
-		Project:  handler.NewProjectHandler(service.NewProjectService(projectRepo)),
+		Article:    handler.NewArticleHandler(service.NewArticleService(articleRepo, categoryRepo, tagRepo)),
+		Category:   handler.NewCategoryHandler(service.NewCategoryService(categoryRepo)),
+		Tag:        handler.NewTagHandler(service.NewTagService(tagRepo)),
+		User:       handler.NewUserHandler(userSvc),
+		Health:     handler.NewHealthHandler(db),
+		Metric:     handler.NewSiteMetricHandler(service.NewSiteMetricService(metricRepo)),
+		Project:    handler.NewProjectHandler(service.NewProjectService(projectRepo)),
+		FriendLink: handler.NewFriendLinkHandler(service.NewFriendLinkService(friendLinkRepo)),
 	}
 
 	// 启动

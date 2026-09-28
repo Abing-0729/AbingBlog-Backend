@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -120,6 +122,17 @@ func (s *ArticleService) Create(req CreateArticleReq) (*model.Article, error) {
 	if err := s.validate(&req); err != nil {
 		return nil, err
 	}
+
+	// 校验分类是否存在
+	if req.CategoryID >= 0 {
+		if _, err := s.category.GetByID(req.CategoryID); err != nil {
+			return nil, fmt.Errorf("分类不存在: %w", err)
+		}
+	} else {
+		return nil, errors.New("请选择文章分类")
+	}
+
+	// 校验标签是否存在
 	tags, err := s.checkTags(req.TagIDs)
 	if err != nil {
 		return nil, err
@@ -134,7 +147,8 @@ func (s *ArticleService) Create(req CreateArticleReq) (*model.Article, error) {
 		Status:     req.Status,
 	}
 	if req.Status == "published" {
-		a.PublishedAt = new(time.Now())
+		now := time.Now()
+		a.PublishedAt = &now
 	}
 	if err := s.article.Create(a); err != nil {
 		return nil, err

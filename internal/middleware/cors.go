@@ -28,7 +28,12 @@ func Cors(allowOrigins []string) gin.HandlerFunc {
 			// 回显了具体源 + 允许携带凭证，前端才能带上 Authorization
 			c.Header("Access-Control-Allow-Credentials", "true")
 			c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
+			// Allow-Headers 必须列全前端会带的每一个自定义头，否则跨域预检（OPTIONS）直接失败：
+			//   Authorization        —— 后台 JWT
+			//   X-Visitor-ID         —— 前端 localStorage 生成的访客 UUID（visit_logs.visitor_key）
+			//   X-Visitor-Device     —— 前端解析好的设备/系统串（如 "iPhone · iOS 17 · Safari"）
+			//   X-Visitor-Name       —— 访客昵称（可选）
+			c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, X-Visitor-ID, X-Visitor-Device, X-Visitor-Name")
 			// 告知浏览器：响应会因 Origin 不同而不同，避免缓存串源
 			c.Header("Vary", "Origin")
 		}

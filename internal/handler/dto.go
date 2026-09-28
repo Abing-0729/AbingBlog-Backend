@@ -101,3 +101,10 @@ func toProjectDTO(p *model.Project) projectDTO {
 		UpdatedAt: p.UpdatedAt,
 	}
 }
+
+type CreateFriendLinkDTO struct {
+	Name        string `json:"name" binding:"required"`
+	Avatar      string `json:"avatar"`
+	URL         string `json:"url" binding:"required,url"`
+	Description string `json:"description"`
+}

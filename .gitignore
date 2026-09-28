@@ -9,3 +9,6 @@
 # 日志
 *.log
 .superpowers/
+
+# 密钥
+.env
