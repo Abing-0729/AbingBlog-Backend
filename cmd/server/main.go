@@ -27,6 +27,7 @@ func main() {
 	metricRepo := repository.NewSiteMetricRepo(db)
 	projectRepo := repository.NewProjectRepo(db)
 	friendLinkRepo := repository.NewFriendLinkRepo(db)
+	visitLogRepo := repository.NewVisitLogRepo(db)
 
 	userSvc := service.NewUserService(userRepo, cfg)
 	// 启动时确保初始管理员存在（账号已存在则跳过）
@@ -41,13 +42,14 @@ func main() {
 		Tag:        handler.NewTagHandler(service.NewTagService(tagRepo)),
 		User:       handler.NewUserHandler(userSvc),
 		Health:     handler.NewHealthHandler(db),
-		Metric:     handler.NewSiteMetricHandler(service.NewSiteMetricService(metricRepo)),
+		Metric:     handler.NewSiteMetricHandler(service.NewSiteMetricService(metricRepo, visitLogRepo)),
 		Project:    handler.NewProjectHandler(service.NewProjectService(projectRepo)),
 		FriendLink: handler.NewFriendLinkHandler(service.NewFriendLinkService(friendLinkRepo)),
+		Visit:      handler.NewVisitLogHandler(service.NewVisitLogService(visitLogRepo)),
 	}
 
 	// 启动
-	r := router.Setup(h, cfg.JWT.Secret, cfg.CORS.AllowOrigins)
+	r := router.Setup(h, cfg.JWT.Secret, cfg.CORS.AllowOrigins, visitLogRepo)
 	log.Printf("server running at http://localhost:%d", cfg.Server.Port)
 	if err := r.Run(fmt.Sprintf(":%d", cfg.Server.Port)); err != nil {
 		log.Fatal(err)

@@ -102,3 +102,17 @@ type FriendLink struct {
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"` // 软删除：访客删除只打标记
 }
+
+// VisitLog 单次访问记录：明细表，"谁（visitor_key）什么时候访问了什么（path）"。
+// 访客身份两级识别：前端 UUID（X-Visitor-ID）或降级 sha256(IP+UA)，见 middleware.VisitTracker。
+type VisitLog struct {
+	ID         uint64    `json:"id" gorm:"primaryKey"`
+	VisitorKey string    `json:"visitor_key" gorm:"size:64;index"` // 访客标识
+	Nickname   string    `json:"nickname" gorm:"size:64"`          // 访客昵称（X-Visitor-Name 头，可空）
+	Device     string    `json:"device" gorm:"size:128"`           // 设备/系统串（X-Visitor-Device 头，如 "iPhone · iOS 17 · Safari"）
+	Path       string    `json:"path" gorm:"size:255"`             // 访问的接口路径
+	IP         string    `json:"ip" gorm:"size:64"`
+	UserAgent  string    `json:"user_agent" gorm:"size:512"`
+	Referer    string    `json:"referer" gorm:"size:512"`
+	CreatedAt  time.Time `json:"created_at" gorm:"index"` // 访问时间
+}
