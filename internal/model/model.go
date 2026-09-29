@@ -43,6 +43,7 @@ type Article struct {
 	Content     string     `gorm:"type:longtext"` // Markdown 原文
 	Summary     string     `gorm:"size:500"`
 	Cover       string     `gorm:"size:500"`
+	URL         string     `gorm:"size:500"` // 外链：发布到掘金/知乎等平台的原文地址（可空）
 	CategoryID  uint       // 0 表示未分类
 	Category    *Category  // Preload 时填充
 	Tags        []Tag      `gorm:"many2many:article_tags;"`

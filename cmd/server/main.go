@@ -4,6 +4,8 @@ import (
 	"abingblog-backend/internal/cache"
 	"fmt"
 	"log"
+	"time"
+	_ "time/tzdata" // 嵌入 IANA 时区数据：极简容器里没有 tzdata 时 LoadLocation 也能用
 
 	"abingblog-backend/internal/config"
 	"abingblog-backend/internal/database"
@@ -16,6 +18,11 @@ import (
 func main() {
 	// 启动配置
 	cfg := config.Load()
+
+	// 校准应用时区：容器默认 UTC，博客面向中文用户，统一用配置的时区（默认 Asia/Shanghai）。
+	// 影响：时间写入/读出、JSON 序列化偏移，以及「今日」统计边界（time.Now 的日期）。
+	setTimeZone(cfg.Server.Timezone)
+
 	cache.Init(cfg)
 	db := database.Init(cfg) // 连接 MySQL（自动建库建表）
 
@@ -54,4 +61,18 @@ func main() {
 	if err := r.Run(fmt.Sprintf(":%d", cfg.Server.Port)); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// setTimeZone 把进程的本地时区设成指定值；空值/加载失败时回退到系统默认。
+// 必须放在 database.Init 之前调用，这样 DSN 里 loc=Local 才能解析成目标时区。
+func setTimeZone(name string) {
+	if name == "" {
+		name = "Asia/Shanghai"
+	}
+	loc, err := time.LoadLocation(name)
+	if err != nil {
+		log.Printf("加载时区 %q 失败，回退到系统时区: %v", name, err)
+		return
+	}
+	time.Local = loc
 }

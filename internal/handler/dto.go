@@ -25,6 +25,7 @@ type articleDTO struct {
 	Title       string       `json:"title"`
 	Summary     string       `json:"summary"`
 	Cover       string       `json:"cover"`
+	URL         string       `json:"url"`
 	Content     string       `json:"content,omitempty"` // 只有详情/后台接口带正文
 	Category    *categoryDTO `json:"category,omitempty"`
 	Tags        []tagDTO     `json:"tags"`
@@ -57,6 +58,7 @@ func toArticleDTO(a *model.Article, withContent bool) articleDTO {
 		Title:       a.Title,
 		Summary:     a.Summary,
 		Cover:       a.Cover,
+		URL:         a.URL,
 		Category:    toCategoryDTO(a.Category),
 		Tags:        toTagDTOs(a.Tags),
 		Status:      a.Status,

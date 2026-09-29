@@ -77,6 +77,7 @@ type CreateArticleReq struct {
 	Content    string `json:"content"`
 	Summary    string `json:"summary"`
 	Cover      string `json:"cover"`
+	URL        string `json:"url"`         // 外链：原文地址（可空）
 	CategoryID uint   `json:"category_id"` // 0 表示未分类
 	TagIDs     []uint `json:"tag_ids"`
 	Status     string `json:"status"` // draft / published，缺省 draft
@@ -143,6 +144,7 @@ func (s *ArticleService) Create(req CreateArticleReq) (*model.Article, error) {
 		Content:    req.Content,
 		Summary:    summaryOf(req.Summary, req.Content),
 		Cover:      req.Cover,
+		URL:        req.URL,
 		CategoryID: req.CategoryID,
 		Status:     req.Status,
 	}
@@ -181,6 +183,7 @@ func (s *ArticleService) Update(id uint, req CreateArticleReq) (*model.Article, 
 	a.Content = req.Content
 	a.Summary = summaryOf(req.Summary, req.Content)
 	a.Cover = req.Cover
+	a.URL = req.URL
 	a.CategoryID = req.CategoryID
 	a.Status = req.Status
 	switch req.Status {
