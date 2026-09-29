@@ -51,6 +51,7 @@ type VisitorSummary struct {
 	VisitorKey string    `json:"visitor_key"`
 	Nickname   string    `json:"nickname"`
 	Device     string    `json:"device"`
+	UserAgent  string    `json:"user_agent"`
 	IP         string    `json:"ip"`
 	Visits     int64     `json:"visits"`
 	LastSeenAt time.Time `json:"last_seen_at"`
@@ -60,7 +61,7 @@ type VisitorSummary struct {
 func (r *VisitLogRepo) SummarizeByVisitor(limit int) ([]VisitorSummary, error) {
 	out := make([]VisitorSummary, 0)
 	err := r.db.Model(&model.VisitLog{}).
-		Select("visitor_key, MAX(nickname) AS nickname, MAX(device) AS device, MAX(ip) AS ip, COUNT(*) AS visits, MAX(created_at) AS last_seen_at").
+		Select("visitor_key, MAX(nickname) AS nickname, MAX(device) AS device, MAX(user_agent) AS user_agent, MAX(ip) AS ip, COUNT(*) AS visits, MAX(created_at) AS last_seen_at").
 		Group("visitor_key").
 		Order("last_seen_at DESC").
 		Limit(limit).

@@ -34,7 +34,8 @@ func (r RedisConfig) Addr() string {
 
 // ServerConfig HTTP 服务配置
 type ServerConfig struct {
-	Port int `yaml:"port"`
+	Port     int    `yaml:"port"`
+	Timezone string `yaml:"timezone"` // 应用时区，默认 Asia/Shanghai，用于校准时间显示与「今日」统计边界
 }
 
 // CORSConfig 跨域白名单。允许的前端来源列表，生产环境用环境变量覆盖
@@ -100,6 +101,7 @@ func Load() *Config {
 // 空字符串也算“未设置”，避免容器里没传的变量把默认值冲成空。
 func applyEnvOverrides(cfg *Config) {
 	setInt(&cfg.Server.Port, "SERVER_PORT")
+	setStr(&cfg.Server.Timezone, "SERVER_TIMEZONE")
 
 	setStr(&cfg.MySQL.Host, "MYSQL_HOST")
 	setInt(&cfg.MySQL.Port, "MYSQL_PORT")

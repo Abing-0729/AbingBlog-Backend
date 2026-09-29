@@ -1,6 +1,7 @@
 # 服务配置（开发环境）。后续 Docker 部署时用环境变量覆盖这些值
 server:
   port: 8080
+  timezone: "Asia/Shanghai"   # 应用时区：校准访问时间显示与「今日」统计边界
 
 mysql:
   host: 127.0.0.1

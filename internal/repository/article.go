@@ -92,6 +92,7 @@ func (r *ArticleRepo) Update(a *model.Article) error {
 		"content":      a.Content,
 		"summary":      a.Summary,
 		"cover":        a.Cover,
+		"url":          a.URL,
 		"category_id":  a.CategoryID,
 		"status":       a.Status,
 		"published_at": a.PublishedAt,

@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"log"
+	"net"
 	"strings"
 
 	"abingblog-backend/internal/model"
@@ -29,7 +30,7 @@ func VisitTracker(repo *repository.VisitLogRepo) gin.HandlerFunc {
 		}
 
 		ua := c.Request.UserAgent()
-		ip := c.ClientIP()
+		ip := normalizeIP(c.ClientIP())
 
 		// 1. 确定访客身份
 		key := strings.TrimSpace(c.GetHeader("X-Visitor-ID"))
@@ -83,4 +84,20 @@ func truncate(s string, n int) string {
 		return s
 	}
 	return s[:n]
+}
+
+// normalizeIP 把 IPv6 回环/映射地址规整成可读的 IPv4（::1 → 127.0.0.1、::ffff:1.2.3.4 → 1.2.3.4），
+// 避免后台把 ::1 这类地址当成"乱码"展示。无法解析的原始串原样返回。
+func normalizeIP(s string) string {
+	ip := net.ParseIP(strings.TrimSpace(s))
+	if ip == nil {
+		return s
+	}
+	if v4 := ip.To4(); v4 != nil {
+		return v4.String()
+	}
+	if ip.IsLoopback() {
+		return "127.0.0.1"
+	}
+	return s
 }
